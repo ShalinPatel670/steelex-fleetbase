@@ -1,0 +1,82 @@
+# FleetBase API Dockerfile for Railway Deployment
+FROM dunglas/frankenphp:1.11-php8.2-bookworm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    bind9-utils \
+    nodejs \
+    npm \
+    uuid-runtime \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP Extensions
+RUN install-php-extensions \
+    pdo_mysql \
+    gd \
+    bcmath \
+    redis \
+    intl \
+    zip \
+    gmp \
+    apcu \
+    opcache \
+    memcached \
+    imagick \
+    sockets \
+    pcntl \
+    @composer
+
+# Install global node modules
+RUN npm install -g chokidar pnpm ember-cli npm-cli-login
+
+# Create pnpm directory and set PNPM_HOME
+RUN mkdir -p ~/.pnpm
+ENV PNPM_HOME=/root/.pnpm
+ENV PATH=/root/.pnpm/bin:$PATH
+
+# Set working directory
+WORKDIR /fleetbase/api
+
+# Copy composer files first for better caching
+COPY api/composer.json api/composer.lock ./
+
+# Install PHP dependencies
+RUN composer install --no-scripts --optimize-autoloader --no-dev
+
+# Copy application code
+COPY api/ .
+
+# Install Node.js dependencies and build assets
+RUN npm install && npm run production
+
+# Set permissions
+RUN chown -R www-data:www-data /fleetbase/api \
+    && chmod -R 755 /fleetbase/api/storage \
+    && chmod -R 755 /fleetbase/api/bootstrap/cache
+
+# Create startup script
+RUN echo '#!/bin/bash' > /start.sh && \
+    echo 'set -e' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# Run migrations if needed' >> /start.sh && \
+    echo 'php artisan migrate --force || true' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# Clear and cache config' >> /start.sh && \
+    echo 'php artisan config:cache' >> /start.sh && \
+    echo 'php artisan route:cache' >> /start.sh && \
+    echo 'php artisan view:cache' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# Start FrankenPHP' >> /start.sh && \
+    echo 'exec php artisan octane:frankenphp --port=${PORT:-8000} --host=0.0.0.0' >> /start.sh && \
+    chmod +x /start.sh
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-8000}/api/v1/health || exit 1
+
+# Expose port
+EXPOSE 8000
+
+# Start command
+CMD ["/start.sh"]

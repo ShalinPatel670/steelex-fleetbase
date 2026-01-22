@@ -1,0 +1,82 @@
+# FleetBase Console Dockerfile for Railway Deployment
+FROM node:18-alpine
+
+# Install nginx for serving static files
+RUN apk add --no-cache nginx curl
+
+# Set working directory
+WORKDIR /fleetbase/console
+
+# Copy package files first for better caching
+COPY console/package*.json ./
+
+# Install dependencies
+RUN npm ci
+
+# Copy application code
+COPY console/ .
+
+# Build the application
+RUN npm run build
+
+# Create nginx directories and config
+RUN mkdir -p /var/log/nginx /run/nginx /var/cache/nginx
+
+# Create nginx configuration
+RUN echo 'user nginx;' > /etc/nginx/nginx.conf && \
+    echo 'worker_processes auto;' >> /etc/nginx/nginx.conf && \
+    echo 'error_log /var/log/nginx/error.log;' >> /etc/nginx/nginx.conf && \
+    echo 'pid /run/nginx.pid;' >> /etc/nginx/nginx.conf && \
+    echo '' >> /etc/nginx/nginx.conf && \
+    echo 'events {' >> /etc/nginx/nginx.conf && \
+    echo '    worker_connections 1024;' >> /etc/nginx/nginx.conf && \
+    echo '}' >> /etc/nginx/nginx.conf && \
+    echo '' >> /etc/nginx/nginx.conf && \
+    echo 'http {' >> /etc/nginx/nginx.conf && \
+    echo '    include /etc/nginx/mime.types;' >> /etc/nginx/nginx.conf && \
+    echo '    default_type application/octet-stream;' >> /etc/nginx/nginx.conf && \
+    echo '    access_log /var/log/nginx/access.log;' >> /etc/nginx/nginx.conf && \
+    echo '' >> /etc/nginx/nginx.conf && \
+    echo '    server {' >> /etc/nginx/nginx.conf && \
+    echo '        listen ${PORT:-3000};' >> /etc/nginx/nginx.conf && \
+    echo '        server_name _;' >> /etc/nginx/nginx.conf && \
+    echo '        root /fleetbase/console/dist;' >> /etc/nginx/nginx.conf && \
+    echo '        index index.html;' >> /etc/nginx/nginx.conf && \
+    echo '' >> /etc/nginx/nginx.conf && \
+    echo '        # Handle static files' >> /etc/nginx/nginx.conf && \
+    echo '        location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {' >> /etc/nginx/nginx.conf && \
+    echo '            expires 1y;' >> /etc/nginx/nginx.conf && \
+    echo '            add_header Cache-Control "public, immutable";' >> /etc/nginx/nginx.conf && \
+    echo '        }' >> /etc/nginx/nginx.conf && \
+    echo '' >> /etc/nginx/nginx.conf && \
+    echo '        # Handle SPA routes' >> /etc/nginx/nginx.conf && \
+    echo '        location / {' >> /etc/nginx/nginx.conf && \
+    echo '            try_files $uri $uri/ /index.html;' >> /etc/nginx/nginx.conf && \
+    echo '        }' >> /etc/nginx/nginx.conf && \
+    echo '' >> /etc/nginx/nginx.conf && \
+    echo '        # Health check' >> /etc/nginx/nginx.conf && \
+    echo '        location /health {' >> /etc/nginx/nginx.conf && \
+    echo '            access_log off;' >> /etc/nginx/nginx.conf && \
+    echo '            return 200 "healthy\\n";' >> /etc/nginx/nginx.conf && \
+    echo '            add_header Content-Type text/plain;' >> /etc/nginx/nginx.conf && \
+    echo '        }' >> /etc/nginx/nginx.conf && \
+    echo '    }' >> /etc/nginx/nginx.conf && \
+    echo '}' >> /etc/nginx/nginx.conf
+
+# Create startup script
+RUN echo '#!/bin/sh' > /start.sh && \
+    echo 'set -e' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# Start nginx' >> /start.sh && \
+    echo 'nginx -g "daemon off;"' >> /start.sh && \
+    chmod +x /start.sh
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:${PORT:-3000}/health || exit 1
+
+# Start command
+CMD ["/start.sh"]

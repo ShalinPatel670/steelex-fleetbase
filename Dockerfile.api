@@ -39,13 +39,13 @@ ENV PATH=/root/.pnpm/bin:$PATH
 WORKDIR /fleetbase/api
 
 # Copy composer files first for better caching
-COPY api/composer.json api/composer.lock ./
+COPY composer.json composer.lock ./
 
 # Install PHP dependencies
 RUN composer install --no-scripts --optimize-autoloader --no-dev
 
 # Copy application code
-COPY api/ .
+COPY . .
 
 # Install Node.js dependencies and build assets
 RUN npm install && npm run production

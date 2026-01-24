@@ -88,6 +88,13 @@ export default async function loadRuntimeConfig() {
             return;
         }
 
+        // Check content type
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            debug('[Runtime Config] Response is not JSON, ignoring...');
+            return;
+        }
+
         const runtimeConfig = await response.json();
         const endTime = performance.now();
 

@@ -22,7 +22,7 @@ const RUNTIME_CONFIG_MAP = {
  */
 const CACHE_KEY = 'fleetbase_runtime_config';
 const CACHE_VERSION_KEY = 'fleetbase_runtime_config_version';
-const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+const CACHE_TTL = 0; // Disable cache
 
 /**
  * Coerce and sanitize runtime config values based on key.
@@ -66,84 +66,7 @@ export function applyRuntimeConfig(rawConfig = {}) {
 }
 
 /**
- * Get cached config from localStorage
- *
- * @returns {Object|null} Cached config or null
- */
-function getCachedConfig() {
-    try {
-        const cached = localStorage.getItem(CACHE_KEY);
-        const cachedVersion = localStorage.getItem(CACHE_VERSION_KEY);
-
-        if (!cached || !cachedVersion) {
-            return null;
-        }
-
-        // Application version has changed
-        if (cachedVersion !== config.APP.version) {
-            debug(`[Runtime Config] Version mismatch (cached: ${cachedVersion}, current: ${config.APP.version})`);
-            return null;
-        }
-
-        const cacheData = JSON.parse(cached);
-        const cacheAge = Date.now() - cacheData.timestamp;
-
-        // Check if cache is still valid (within TTL)
-        if (cacheAge > CACHE_TTL) {
-            debug('[Runtime Config] Cache expired');
-            return null;
-        }
-
-        debug(`[Runtime Config] Using cached config (age: ${Math.round(cacheAge / 1000)}s)`);
-        return cacheData.config;
-    } catch (e) {
-        debug(`[Runtime Config] Failed to read cache: ${e.message}`);
-        return null;
-    }
-}
-
-/**
- * Save config to localStorage cache
- *
- * @param {Object} config Config object
- */
-function setCachedConfig(runtimeConfig) {
-    try {
-        const cacheData = {
-            config: runtimeConfig,
-            timestamp: Date.now(),
-        };
-        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-        localStorage.setItem(CACHE_VERSION_KEY, config.APP.version);
-        debug('[Runtime Config] Config cached to localStorage');
-    } catch (e) {
-        debug(`[Runtime Config] Failed to cache config: ${e.message}`);
-    }
-}
-
-/**
- * Clear cached config
- *
- * @export
- */
-export function clearRuntimeConfigCache() {
-    try {
-        localStorage.removeItem(CACHE_KEY);
-        localStorage.removeItem(CACHE_VERSION_KEY);
-        debug('[Runtime Config] Cache cleared');
-    } catch (e) {
-        debug(`[Runtime Config] Failed to clear cache: ${e.message}`);
-    }
-}
-
-/**
- * Load and apply runtime config with localStorage caching.
- *
- * Strategy:
- * 1. Check localStorage cache first (instant, no HTTP request)
- * 2. If cache hit and valid, use it immediately
- * 3. If cache miss, fetch from server and cache the result
- * 4. Cache is valid for 1 hour
+ * Load and apply runtime config without caching.
  *
  * @export
  * @return {Promise<void>}
@@ -153,21 +76,11 @@ export default async function loadRuntimeConfig() {
         return;
     }
 
-    const isProduction = config?.environment === 'production';
-    if (isProduction) {
-        // Try cache first
-        const cachedConfig = getCachedConfig();
-        if (cachedConfig) {
-            applyRuntimeConfig(cachedConfig);
-            return;
-        }
-    }
-
-    // Cache miss - fetch from server
+    // Always fetch from server
     try {
         const startTime = performance.now();
         const response = await fetch('/fleetbase.config.json', {
-            cache: 'default', // Use browser cache if available
+            cache: 'no-store', // Force network fetch
         });
 
         if (!response.ok) {
@@ -180,9 +93,8 @@ export default async function loadRuntimeConfig() {
 
         debug(`[Runtime Config] Fetched from server in ${(endTime - startTime).toFixed(2)}ms`);
 
-        // Apply and cache
+        // Apply config
         applyRuntimeConfig(runtimeConfig);
-        setCachedConfig(runtimeConfig);
     } catch (e) {
         debug(`[Runtime Config] Failed to load runtime config: ${e.message}`);
     }

@@ -16,6 +16,23 @@ RUN npm ci
 # Copy application code
 COPY console/ .
 
+# These allow Railway build variables to be passed into the container build process
+ARG API_HOST
+ARG API_NAMESPACE
+ARG SOCKETCLUSTER_HOST
+ARG SOCKETCLUSTER_PORT
+ARG SOCKETCLUSTER_SECURE
+ARG DISABLE_RUNTIME_CONFIG
+
+# Map them to ENV so the 'getenv' util in environment.js can see them
+ENV API_HOST=$API_HOST
+ENV API_NAMESPACE=$API_NAMESPACE
+ENV SOCKETCLUSTER_HOST=$SOCKETCLUSTER_HOST
+ENV SOCKETCLUSTER_PORT=$SOCKETCLUSTER_PORT
+ENV SOCKETCLUSTER_SECURE=$SOCKETCLUSTER_SECURE
+ENV DISABLE_RUNTIME_CONFIG=$DISABLE_RUNTIME_CONFIG
+# ----------------------------
+
 # Build the application
 RUN npm run build
 

@@ -3,5 +3,5 @@
     "API_NAMESPACE": "int/v1",
     "SOCKETCLUSTER_HOST": "fleetbase-socket-production.up.railway.app",
     "SOCKETCLUSTER_SECURE": true,
-    "SOCKETCLUSTER_PORT": 443
+    "SOCKETCLUSTER_PORT": 8000
 }

@@ -99,6 +99,7 @@ export default async function loadRuntimeConfig() {
         const endTime = performance.now();
 
         debug(`[Runtime Config] Fetched from server in ${(endTime - startTime).toFixed(2)}ms`);
+        console.log('[DEBUG] Runtime config loaded:', runtimeConfig);
 
         // Apply config
         applyRuntimeConfig(runtimeConfig);

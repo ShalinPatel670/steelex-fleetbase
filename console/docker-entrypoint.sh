@@ -4,6 +4,7 @@ set -e
 # Generate fleetbase.config.json from connection vars
 echo "Generating runtime configuration..."
 cat <<EOF > /fleetbase/console/dist/fleetbase.config.json
+# Generated at runtime from environment variables
 {
   "API_HOST": "${API_HOST}",
   "API_NAMESPACE": "${API_NAMESPACE:-int/v1}",

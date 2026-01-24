@@ -49,6 +49,20 @@ RUN echo 'user nginx;' > /etc/nginx/nginx.conf && \
     echo '            add_header Cache-Control "public, immutable";' >> /etc/nginx/nginx.conf && \
     echo '        }' >> /etc/nginx/nginx.conf && \
     echo '' >> /etc/nginx/nginx.conf && \
+    echo '        # Serve runtime config with no cache' >> /etc/nginx/nginx.conf && \
+    echo '        location = /fleetbase.config.json {' >> /etc/nginx/nginx.conf && \
+    echo '            root /fleetbase/console/dist;' >> /etc/nginx/nginx.conf && \
+    echo '            default_type application/json;' >> /etc/nginx/nginx.conf && \
+    echo '            add_header Cache-Control "no-cache, no-store, must-revalidate";' >> /etc/nginx/nginx.conf && \
+    echo '            add_header Pragma "no-cache";' >> /etc/nginx/nginx.conf && \
+    echo '            add_header Expires 0;' >> /etc/nginx/nginx.conf && \
+    echo '            try_files /fleetbase.config.json @config_fallback;' >> /etc/nginx/nginx.conf && \
+    echo '        }' >> /etc/nginx/nginx.conf && \
+    echo '' >> /etc/nginx/nginx.conf && \
+    echo '        location @config_fallback {' >> /etc/nginx/nginx.conf && \
+    echo '            return 200 '\''{}'\'';' >> /etc/nginx/nginx.conf && \
+    echo '        }' >> /etc/nginx/nginx.conf && \
+    echo '' >> /etc/nginx/nginx.conf && \
     echo '        # Handle SPA routes' >> /etc/nginx/nginx.conf && \
     echo '        location / {' >> /etc/nginx/nginx.conf && \
     echo '            try_files $uri $uri/ /index.html;' >> /etc/nginx/nginx.conf && \

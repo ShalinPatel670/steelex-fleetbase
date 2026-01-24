@@ -117,7 +117,26 @@ export default async function loadRuntimeConfig() {
         applyRuntimeConfig(runtimeConfig);
         console.log('[DEBUG] Runtime config applied, new config.API.host:', config.API.host);
     } catch (e) {
-        console.log('[DEBUG] Runtime config failed:', e.message);
+        console.log('[DEBUG] Runtime config fetch failed:', e.message);
+        console.log('[DEBUG] Falling back to environment variables');
+
+        // Fallback: try to build config from environment variables
+        const envConfig = {};
+        const envVars = ['API_HOST', 'API_NAMESPACE', 'SOCKETCLUSTER_HOST', 'SOCKETCLUSTER_PORT', 'SOCKETCLUSTER_SECURE'];
+
+        envVars.forEach(key => {
+            if (typeof window !== 'undefined' && window.fleetbaseRuntimeConfig && window.fleetbaseRuntimeConfig[key]) {
+                envConfig[key] = window.fleetbaseRuntimeConfig[key];
+            }
+        });
+
+        if (Object.keys(envConfig).length > 0) {
+            console.log('[DEBUG] Using fallback env config:', envConfig);
+            applyRuntimeConfig(envConfig);
+        } else {
+            console.log('[DEBUG] No fallback config available');
+        }
+
         debug(`[Runtime Config] Failed to load runtime config: ${e.message}`);
     }
 }

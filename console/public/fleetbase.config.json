@@ -1,4 +1,7 @@
 {
     "API_HOST": "https://fleetbase-api-production.up.railway.app",
-    "API_NAMESPACE": "int/v1"
+    "API_NAMESPACE": "int/v1",
+    "SOCKETCLUSTER_HOST": "fleetbase-socket-production.up.railway.app",
+    "SOCKETCLUSTER_SECURE": true,
+    "SOCKETCLUSTER_PORT": 443
 }

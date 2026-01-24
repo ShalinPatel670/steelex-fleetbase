@@ -45,7 +45,7 @@ FROM nginx:alpine
 COPY --from=builder /console/dist /usr/share/nginx/html
 
 # Expose the port nginx is bound to
-EXPOSE 4200
+EXPOSE 3000
 
 # Use custom nginx.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf

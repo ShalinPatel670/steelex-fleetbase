@@ -23,11 +23,11 @@ module.exports = function (environment) {
         APP: {
             autoboot: true,
             extensions: asArray(getenv('EXTENSIONS')),
-            disableRuntimeConfig: toBoolean(getenv('DISABLE_RUNTIME_CONFIG', false)),
+            disableRuntimeConfig: toBoolean(getenv('DISABLE_RUNTIME_CONFIG', environment === 'production')),
         },
 
         API: {
-            host: fixApiHost(getenv('API_HOST'), toBoolean(getenv('API_SECURE'))),
+            host: fixApiHost(getenv('API_HOST', 'https://fleetbase-api-production.up.railway.app'), toBoolean(getenv('API_SECURE', true))),
             namespace: getenv('API_NAMESPACE', 'int/v1'),
         },
 
@@ -38,9 +38,9 @@ module.exports = function (environment) {
 
         socket: {
             path: getenv('SOCKETCLUSTER_PATH', '/socketcluster/'),
-            hostname: getenv('SOCKETCLUSTER_HOST'),
-            secure: toBoolean(getenv('SOCKETCLUSTER_SECURE', false)),
-            port: getenv('SOCKETCLUSTER_PORT', 38000),
+            hostname: getenv('SOCKETCLUSTER_HOST', 'fleetbase-socket-production.up.railway.app'),
+            secure: toBoolean(getenv('SOCKETCLUSTER_SECURE', true)),
+            port: getenv('SOCKETCLUSTER_PORT', 443),
         },
 
         stripe: {

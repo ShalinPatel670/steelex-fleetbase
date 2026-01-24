@@ -59,15 +59,16 @@ RUN chown -R www-data:www-data /fleetbase/api \
 RUN echo '#!/bin/bash' > /start.sh && \
     echo 'set -e' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# Run migrations if needed' >> /start.sh && \
+    echo '# Force clear cache to pick up Railway Env Vars' >> /start.sh && \
+    echo 'php artisan config:clear' >> /start.sh && \
+    echo 'php artisan cache:clear' >> /start.sh && \
+    echo '' >> /start.sh && \
+    echo '# Run migrations' >> /start.sh && \
     echo 'php artisan migrate --force || true' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# Clear and cache config' >> /start.sh && \
+    echo '# Optional: Re-cache for production speed' >> /start.sh && \
     echo 'php artisan config:cache' >> /start.sh && \
-    echo 'php artisan route:cache' >> /start.sh && \
-    echo 'php artisan view:cache' >> /start.sh && \
     echo '' >> /start.sh && \
-    echo '# Start FrankenPHP' >> /start.sh && \
     echo 'exec php artisan octane:frankenphp --port=${PORT:-8000} --host=0.0.0.0' >> /start.sh && \
     chmod +x /start.sh
 

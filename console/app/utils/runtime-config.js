@@ -53,13 +53,17 @@ function coerceValue(key, value) {
  * @param {Object} rawConfig
  */
 export function applyRuntimeConfig(rawConfig = {}) {
+    console.log('[DEBUG] applyRuntimeConfig called with:', rawConfig);
     Object.entries(rawConfig).forEach(([key, value]) => {
         const configPath = RUNTIME_CONFIG_MAP[key];
+        console.log('[DEBUG] Processing key:', key, '-> configPath:', configPath, 'value:', value);
 
         if (configPath) {
             const coercedValue = coerceValue(key, value);
+            console.log('[DEBUG] Setting config path:', configPath, 'to:', coercedValue);
             set(config, configPath, coercedValue);
         } else {
+            console.log('[DEBUG] Ignoring unknown key:', key);
             debug(`[Runtime Config] Ignored unknown key: ${key}`);
         }
     });
@@ -72,25 +76,33 @@ export function applyRuntimeConfig(rawConfig = {}) {
  * @return {Promise<void>}
  */
 export default async function loadRuntimeConfig() {
+    console.log('[DEBUG] loadRuntimeConfig called, disableRuntimeConfig:', config.APP.disableRuntimeConfig);
     if (config.APP.disableRuntimeConfig) {
+        console.log('[DEBUG] Runtime config disabled, returning');
         return;
     }
 
     // Always fetch from server
     try {
         const startTime = performance.now();
+        console.log('[DEBUG] Fetching /fleetbase.config.json...');
         const response = await fetch('/fleetbase.config.json', {
             cache: 'no-store', // Force network fetch
         });
 
+        console.log('[DEBUG] Fetch response status:', response.status, 'ok:', response.ok);
+
         if (!response.ok) {
+            console.log('[DEBUG] Response not ok, using built-in config defaults');
             debug('[Runtime Config] No fleetbase.config.json found, using built-in config defaults');
             return;
         }
 
         // Check content type
         const contentType = response.headers.get('content-type');
+        console.log('[DEBUG] Content-Type:', contentType);
         if (!contentType || !contentType.includes('application/json')) {
+            console.log('[DEBUG] Content type not JSON, ignoring');
             debug('[Runtime Config] Response is not JSON, ignoring...');
             return;
         }
@@ -98,12 +110,14 @@ export default async function loadRuntimeConfig() {
         const runtimeConfig = await response.json();
         const endTime = performance.now();
 
+        console.log('[DEBUG] Runtime config loaded successfully:', runtimeConfig);
         debug(`[Runtime Config] Fetched from server in ${(endTime - startTime).toFixed(2)}ms`);
-        console.log('[DEBUG] Runtime config loaded:', runtimeConfig);
 
         // Apply config
         applyRuntimeConfig(runtimeConfig);
+        console.log('[DEBUG] Runtime config applied, new config.API.host:', config.API.host);
     } catch (e) {
+        console.log('[DEBUG] Runtime config failed:', e.message);
         debug(`[Runtime Config] Failed to load runtime config: ${e.message}`);
     }
 }

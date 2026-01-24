@@ -27,8 +27,8 @@ module.exports = function (environment) {
         },
 
         API: {
-            host: fixApiHost(getenv('API_HOST', 'https://fleetbase-api-production.up.railway.app'), toBoolean(getenv('API_SECURE', true))),
-            namespace: getenv('API_NAMESPACE', 'int/v1'),
+            host: fixApiHost(getenv('API_HOST') || 'https://fleetbase-api-production.up.railway.app', toBoolean(getenv('API_SECURE', true))),
+            namespace: getenv('API_NAMESPACE') || 'int/v1',
         },
 
         osrm: {

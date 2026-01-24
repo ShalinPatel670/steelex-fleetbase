@@ -38,7 +38,7 @@ module.exports = function (defaults) {
     if (toBoolean(process.env.DISABLE_RUNTIME_CONFIG)) {
         runtimeConfigTree = writeFile('fleetbase.config.json', '{}');
     } else {
-        runtimeConfigTree = new Funnel('.', {
+        runtimeConfigTree = new Funnel('public', {
             files: ['fleetbase.config.json'],
             destDir: '/',
         });

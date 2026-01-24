@@ -44,5 +44,10 @@ module.exports = function (defaults) {
         });
     }
 
-    return app.toTree([runtimeConfigTree].filter(Boolean), { overwrite: true });
+    const appTree = app.toTree(); // Get the standard app tree first
+    
+    // Explicitly merge the app tree with your runtime config tree
+    return mergeTrees([appTree, runtimeConfigTree].filter(Boolean), { 
+        overwrite: true 
+    });
 };

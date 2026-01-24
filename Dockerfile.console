@@ -63,22 +63,9 @@ RUN echo 'user nginx;' > /etc/nginx/nginx.conf && \
     echo '    }' >> /etc/nginx/nginx.conf && \
     echo '}' >> /etc/nginx/nginx.conf
 
-# Create startup script
-RUN echo '#!/bin/sh' > /start.sh && \
-    echo 'set -e' >> /start.sh && \
-    echo '' >> /start.sh && \
-    echo '# Generate fleetbase.config.json from connection vars' >> /start.sh && \
-    echo 'echo "{' >> /start.sh && \
-    echo '  \"API_HOST\": \"${API_HOST}\",' >> /start.sh && \
-    echo '  \"API_NAMESPACE\": \"${API_NAMESPACE:-int/v1}\",' >> /start.sh && \
-    echo '  \"SOCKETCLUSTER_HOST\": \"${SOCKETCLUSTER_HOST}\",' >> /start.sh && \
-    echo '  \"SOCKETCLUSTER_PORT\": ${SOCKETCLUSTER_PORT:-443},' >> /start.sh && \
-    echo '  \"SOCKETCLUSTER_SECURE\": ${SOCKETCLUSTER_SECURE:-true}' >> /start.sh && \
-    echo '}" > /fleetbase/console/dist/fleetbase.config.json' >> /start.sh && \
-    echo '' >> /start.sh && \
-    echo '# Start nginx' >> /start.sh && \
-    echo 'nginx -g "daemon off;"' >> /start.sh && \
-    chmod +x /start.sh
+# Copy entrypoint script
+COPY console/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Expose port
 EXPOSE 3000
@@ -88,4 +75,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD curl -f http://localhost:${PORT:-3000}/health || exit 1
 
 # Start command
-CMD ["/start.sh"]
+CMD ["/docker-entrypoint.sh"]

@@ -44,5 +44,5 @@ module.exports = function (defaults) {
         });
     }
 
-    return app.toTree([runtimeConfigTree].filter(Boolean));
+    return app.toTree([runtimeConfigTree].filter(Boolean), { overwrite: true });
 };

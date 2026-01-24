@@ -67,6 +67,15 @@ RUN echo 'user nginx;' > /etc/nginx/nginx.conf && \
 RUN echo '#!/bin/sh' > /start.sh && \
     echo 'set -e' >> /start.sh && \
     echo '' >> /start.sh && \
+    echo '# Generate fleetbase.config.json from connection vars' >> /start.sh && \
+    echo 'echo "{' >> /start.sh && \
+    echo '  \"API_HOST\": \"${API_HOST}\",' >> /start.sh && \
+    echo '  \"API_NAMESPACE\": \"${API_NAMESPACE:-int/v1}\",' >> /start.sh && \
+    echo '  \"SOCKETCLUSTER_HOST\": \"${SOCKETCLUSTER_HOST}\",' >> /start.sh && \
+    echo '  \"SOCKETCLUSTER_PORT\": ${SOCKETCLUSTER_PORT:-443},' >> /start.sh && \
+    echo '  \"SOCKETCLUSTER_SECURE\": ${SOCKETCLUSTER_SECURE:-true}' >> /start.sh && \
+    echo '}" > /usr/share/nginx/html/fleetbase.config.json' >> /start.sh && \
+    echo '' >> /start.sh && \
     echo '# Start nginx' >> /start.sh && \
     echo 'nginx -g "daemon off;"' >> /start.sh && \
     chmod +x /start.sh

@@ -62,6 +62,9 @@ RUN echo '#!/bin/bash' > /start.sh && \
     echo '# Run migrations if needed' >> /start.sh && \
     echo 'php artisan migrate --force || true' >> /start.sh && \
     echo '' >> /start.sh && \
+    echo '# Run seeders' >> /start.sh && \
+    echo 'php artisan db:seed --force || true' >> /start.sh && \
+    echo '' >> /start.sh && \
     echo '# Clear and cache config' >> /start.sh && \
     echo 'php artisan config:cache' >> /start.sh && \
     echo 'php artisan route:cache' >> /start.sh && \

@@ -37,7 +37,7 @@ module.exports = function (environment) {
             namespace: getenv('API_NAMESPACE') || 'int/v1',
             apiHostEnv: getenv('API_HOST'),
             apiSecureEnv: getenv('API_SECURE')
-        }),
+        });
 
         osrm: {
             host: getenv('OSRM_HOST', 'https://router.project-osrm.org'),

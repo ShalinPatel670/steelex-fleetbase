@@ -31,6 +31,14 @@ module.exports = function (environment) {
             namespace: getenv('API_NAMESPACE') || 'int/v1',
         },
 
+        // Debug: Log API configuration for troubleshooting
+        console.log('[DEBUG] API Configuration:', {
+            host: fixApiHost(getenv('API_HOST') || 'https://fleetbase-api-production.up.railway.app', toBoolean(getenv('API_SECURE', true))),
+            namespace: getenv('API_NAMESPACE') || 'int/v1',
+            apiHostEnv: getenv('API_HOST'),
+            apiSecureEnv: getenv('API_SECURE')
+        }),
+
         osrm: {
             host: getenv('OSRM_HOST', 'https://router.project-osrm.org'),
             servers: {},

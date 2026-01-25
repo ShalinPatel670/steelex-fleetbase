@@ -128,23 +128,40 @@ export default class AuthLoginController extends Controller {
         }
 
         try {
-            console.log('[DEBUG] Attempting authentication with:', { identity, password: '***' });
+            console.log('[DEBUG] Attempting authentication with:', { identity, password: '***', rememberMe });
+            console.log('[DEBUG] Session state before authenticate:', {
+                isAuthenticated: this.session.isAuthenticated,
+                hasData: !!this.session.data,
+                dataKeys: this.session.data ? Object.keys(this.session.data) : []
+            });
+
             await this.session.authenticate('authenticator:fleetbase', { identity, password }, rememberMe);
+
             console.log('[DEBUG] Authentication succeeded, session.isAuthenticated:', this.session.isAuthenticated);
+            console.log('[DEBUG] Session data after authenticate:', this.session.data);
         } catch (error) {
             console.log('[DEBUG] Authentication failed with error:', error);
+            console.log('[DEBUG] Error details:', {
+                message: error.message,
+                name: error.name,
+                stack: error.stack,
+                toString: error.toString()
+            });
             this.failedAttempts++;
 
             // Handle unverified user
             if (error.toString().includes('not verified')) {
+                console.log('[DEBUG] User not verified, redirecting to email verification');
                 return this.sendUserForEmailVerification(identity);
             }
 
             // Handle password reset required
             if (error.toString().includes('reset required')) {
+                console.log('[DEBUG] Password reset required, redirecting to password reset');
                 return this.sendUserForPasswordReset(identity);
             }
 
+            console.log('[DEBUG] Calling failure handler with error');
             return this.failure(error);
         }
 

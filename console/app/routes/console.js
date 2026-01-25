@@ -20,12 +20,17 @@ export default class ConsoleRoute extends Route {
      * @memberof ConsoleRoute
      */
     async beforeModel(transition) {
+        console.log('[DEBUG] Console route beforeModel, session.isAuthenticated:', this.session.isAuthenticated);
         await this.session.requireAuthentication(transition, 'auth.login');
+        console.log('[DEBUG] requireAuthentication passed, session.isAuthenticated:', this.session.isAuthenticated);
 
         this.hookService.execute('console:before-model', this.session, this.router, transition);
 
         if (this.session.isAuthenticated) {
+            console.log('[DEBUG] Loading current user...');
             return this.session.promiseCurrentUser(transition);
+        } else {
+            console.log('[DEBUG] Session not authenticated, skipping current user load');
         }
     }
 

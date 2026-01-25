@@ -128,8 +128,11 @@ export default class AuthLoginController extends Controller {
         }
 
         try {
+            console.log('[DEBUG] Attempting authentication with:', { identity, password: '***' });
             await this.session.authenticate('authenticator:fleetbase', { identity, password }, rememberMe);
+            console.log('[DEBUG] Authentication succeeded, session.isAuthenticated:', this.session.isAuthenticated);
         } catch (error) {
+            console.log('[DEBUG] Authentication failed with error:', error);
             this.failedAttempts++;
 
             // Handle unverified user
@@ -146,7 +149,10 @@ export default class AuthLoginController extends Controller {
         }
 
         if (this.session.isAuthenticated) {
+            console.log('[DEBUG] Session is authenticated, calling success()');
             this.success();
+        } else {
+            console.log('[DEBUG] Session is not authenticated after login attempt');
         }
     }
 

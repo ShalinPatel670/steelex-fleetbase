@@ -145,7 +145,8 @@ export default class AuthLoginController extends Controller {
                 message: error.message,
                 name: error.name,
                 stack: error.stack,
-                toString: error.toString()
+                toString: error.toString(),
+                fullError: error
             });
             this.failedAttempts++;
 

@@ -28,7 +28,22 @@ export default class ConsoleRoute extends Route {
 
         if (this.session.isAuthenticated) {
             console.log('[DEBUG] Loading current user...');
-            return this.session.promiseCurrentUser(transition);
+            console.log('[DEBUG] Session data before user load:', this.session.data);
+
+            try {
+                const result = await this.session.promiseCurrentUser(transition);
+                console.log('[DEBUG] Current user loaded successfully:', result);
+                return result;
+            } catch (error) {
+                console.log('[DEBUG] Current user loading failed with error:', error);
+                console.log('[DEBUG] Error details:', {
+                    message: error.message,
+                    name: error.name,
+                    stack: error.stack,
+                    fullError: error
+                });
+                throw error;
+            }
         } else {
             console.log('[DEBUG] Session not authenticated, skipping current user load');
         }

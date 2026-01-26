@@ -55,3 +55,4 @@ builds/osx/frankenphp
 *.dll
 *.so
 *.dylib
+DB_tables.md

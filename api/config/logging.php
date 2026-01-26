@@ -98,7 +98,7 @@ return [
 
         'stdout' => [
             'driver' => 'monolog',
-            'handler' => StreamHandler::class,
+            'handler' => \Fleetbase\Support\Logging\ImmediateFlushStreamHandler::class,
             'formatter' => JsonFormatter::class,
             'with' => [
                 'stream' => 'php://stdout',
